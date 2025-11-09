@@ -1,63 +1,133 @@
+"use client";
+
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export default function Home() {
+  const [nama, setNama] = useState("");
+  const [selectedMeja, setSelectedMeja] = useState(null);
+  const [allNames, setAllNames] = useState([]);
+
+  async function fetchNames() {
+    try {
+      const response = await fetch("/api/pengunjung");
+      const data = await response.json();
+      setAllNames(data);
+    } catch (error) {
+      console.error("Error fetching names:", error);
+    }
+  }
+
+  useEffect(() => {
+    fetchNames();
+  }, []);
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+
+    if (!nama || !selectedMeja) {
+      alert("Mohon isi nama dan pilih nomor meja!");
+      return;
+    }
+
+    try {
+      const res = await fetch("/api/absen", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nama, nomor_kursi: selectedMeja }),
+      });
+
+      const result = await res.json();
+      if (!res.ok) throw new Error(result.message);
+
+      alert(result.message);
+      setNama("");
+      setSelectedMeja(null);
+
+      await fetchNames();
+    } catch (error) {
+      alert("Error: " + error.message);
+    }
+  };
+
+  const mejaList = Array.from({ length: 30 }, (_, i) => i + 1);
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.js file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="fixed inset-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
+      {/* 🌐 NAVBAR */}
+      <nav className="flex flex-row top-0 z-50 w-full bg-gradient-to-r from-slate-900 to-slate-800 text-white border-b border-slate-700 shadow-lg">
+        <div className="max-w-7xl mx-auto px-6 w-full">
+          <div className="flex justify-between items-center h-16">
+            <div className="flex items-center space-x-2">
+              <Image src="/lkj.png" alt="Logo LKJ" width={30} height={30} />
+              <Image
+                src="/webkomjar-ico.svg"
+                alt="Logo Webkomjar"
+                width={150}
+                height={40}
+              />
+            </div>
+            <ul className="flex items-center space-x-2 bg-slate-800/50 border border-slate-700 rounded-full px-3 py-1">
+              <li className="bg-slate-200 text-slate-900 font-bold px-4 py-1 rounded-full text-sm">
+                Absensi
+              </li>
+            </ul>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
+      </nav>
+
+      <main className="relative flex flex-col items-center justify-start flex-grow z-10 w-full px-10 pt-16 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-20"></div>
+        <div className="absolute inset-0 backdrop-blur-md bg-white/5"></div>
+
+        <div className="relative z-10 w-full max-w-4xl">
+          <form
+            onSubmit={handleSubmit}
+            className="flex flex-col items-center gap-10"
           >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
+            <div className="flex w-full max-w-2xl mx-auto relative items-center">
+              <input
+                list="namaList"
+                value={nama}
+                onChange={(e) => setNama(e.target.value)}
+                placeholder="Masukkan nama lengkap"
+                className="w-full rounded-xl border border-white/20 bg-white/10 p-3 text-white placeholder-zinc-400 shadow-inner focus:border-blue-400 focus:ring-2 focus:ring-blue-500/50 backdrop-blur-sm transition-all duration-200 appearance-none"
+                autoComplete="off"
+              />
+
+              <datalist id="namaList">
+                {allNames.map((n, index) => (
+                  <option key={index} value={n} />
+                ))}
+              </datalist>
+
+              <button
+                type="submit"
+                className="ml-3 px-6 py-3 rounded-xl bg-blue-600/80 hover:bg-blue-500/90 backdrop-blur-md text-white text-lg font-semibold shadow-lg shadow-blue-500/30 transition-all duration-300 whitespace-nowrap"
+              >
+                Simpan
+              </button>
+            </div>
+
+            <div className="w-full mt-6">
+              <div className="grid grid-cols-5 gap-x-14 gap-y-10 justify-items-center">
+                {mejaList.map((no) => (
+                  <button
+                    key={no}
+                    type="button"
+                    onClick={() => setSelectedMeja(no)}
+                    className={`w-28 h-24 rounded-2xl text-2xl font-semibold shadow-md transition-all duration-300 backdrop-blur-sm ${
+                      selectedMeja === no
+                        ? "bg-blue-500/70 text-white scale-105 border border-blue-300 shadow-blue-500/30"
+                        : "bg-white/10 hover:bg-white/20 text-zinc-200 border border-white/10"
+                    }`}
+                  >
+                    {no}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </form>
         </div>
       </main>
     </div>
