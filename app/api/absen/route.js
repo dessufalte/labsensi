@@ -1,5 +1,39 @@
 import { db } from "@/lib/firebase";
-import { query, collection, addDoc, serverTimestamp, where, getDocs } from "firebase/firestore";
+import {
+  query,
+  collection,
+  addDoc,
+  serverTimestamp,
+  where,
+  getDocs,
+  orderBy,
+  limit,
+} from "firebase/firestore";
+
+export async function GET(req) {
+  try {
+    const url = new URL(req.url);
+    const limitParam = parseInt(url.searchParams.get("limit") || "10"); // default ambil 10 terakhir
+
+    const q = query(
+      collection(db, "absen"),
+      orderBy("timestamp", "desc"),
+      limit(limitParam)
+    );
+
+    const snapshot = await getDocs(q);
+    const data = snapshot.docs.map((doc) => ({
+      id: doc.id,
+      ...doc.data(),
+    }));
+
+    return Response.json(data, { status: 200 });
+  } catch (error) {
+    console.error("Error fetching absensi:", error);
+    return Response.json({ message: "Gagal mengambil data absensi." }, { status: 500 });
+  }
+}
+
 
 export async function POST(req) {
   try {
@@ -19,20 +53,20 @@ export async function POST(req) {
         { status: 400 }
       );
     }
-    
+
     const absen = {
       nama: nama.trim(),
       nomor_kursi: Number(nomor_kursi),
       timestamp: serverTimestamp(),
     };
-    
+
     await addDoc(collection(db, "absen"), absen);
 
     const q = query(collection(db, "pengunjung"), where("nama", "==", nama));
     const snapshot = await getDocs(q);
 
     if (snapshot.empty) {
-        await addDoc(collection(db, "pengunjung"), { nama });
+      await addDoc(collection(db, "pengunjung"), { nama });
     }
 
     return Response.json(
@@ -40,8 +74,7 @@ export async function POST(req) {
       { status: 200 }
     );
   } catch (error) {
-    return Response.json(error.message, { status: 500 });
+    console.error("Error saving absensi:", error);
+    return Response.json({ message: error.message }, { status: 500 });
   }
 }
-
-
