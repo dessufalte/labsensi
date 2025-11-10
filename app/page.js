@@ -63,7 +63,10 @@ export default function Home() {
     }
   };
 
-  const mejaList = Array.from({ length: 30 }, (_, i) => i + 1);
+  const mejaList = [
+    6, 5, 4, 3, 2, 1, 7, 8, 9, 10, 11, 12, 18, 17, 16, 15, 14, 13, 19, 20, 21,
+    22, 23, 24, 30, 29, 28, 27, 26, 25,
+  ];
 
   return (
     <div className="fixed inset-0 flex flex-col overflow-hidden bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 text-white">
@@ -127,7 +130,7 @@ export default function Home() {
             {/* Grid meja */}
             <div className="relative w-full mt-6">
               {/* Popup daftar pengunjung terakhir */}
-              <div className="absolute -left-64 top-0 w-56 bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl shadow-xl p-3 text-sm">
+              <div className="absolute -left-80 top-0 w-72 bg-white/10 border border-white/20 backdrop-blur-md rounded-2xl shadow-xl p-3 text-sm">
                 <h2 className="text-white/90 font-semibold mb-2 text-center">
                   Pengunjung Terakhir
                 </h2>
@@ -143,7 +146,9 @@ export default function Home() {
                         className="flex justify-between items-center bg-white/10 rounded-lg px-2 py-1 text-xs hover:bg-white/20 transition-all duration-200"
                       >
                         <span className="truncate">{v.nama}</span>
-                        <span className="text-white/60">🪑 {v.nomor_kursi}</span>
+                        <span className="text-white/60">
+                          🪑 {v.nomor_kursi}
+                        </span>
                       </li>
                     ))
                   )}
@@ -151,7 +156,7 @@ export default function Home() {
               </div>
 
               {/* Grid utama */}
-              <div className="grid grid-cols-5 gap-x-14 gap-y-10 justify-items-center">
+              <div className="grid grid-cols-6 gap-x-14 gap-y-10 justify-items-center">
                 {mejaList.map((no) => (
                   <button
                     key={no}
